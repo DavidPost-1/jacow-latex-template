@@ -1,0 +1,68 @@
+This short document demonstrates the use of the JACoW formatting style in \LaTeX, highlighting the template's key features. It is intended to help authors quickly create a correctly formatted JACoW manuscript in \LaTeX. Authors are expected to be familiar with the contents of the "JACoW Style Guide" document (\verb|jacow_latex_style_guide|), which is available on the JACoW website.
+
+\subsection{Headings}
+
+Title and section headings are automatically converted to uppercase, therefore the author must ensure 
+that all units and acronyms with mixed case writings (keV, MeV, GHz, µs, SwissFEL, SuperKEKB, 
+FCC-hh) are correctly typeset (see use of macro \verb|\NoCaseChange{text}| in above title).
+The plural of proper nouns and acronyms in uppercase has to be a LOWERCASE “s” (e.\,g. 
+LINAC\textbf{s}, PLM\textbf{s}). 
+
+\subsection{Figures and Tables}
+
+Figures and tables should be placed as close as possible to where they are mentioned. 
+Each figure and table must be numbered in ascending order (1, 2, 3, etc.) throughout the paper. 
+The lettering in figures and tables must be large enough to be reproduced clearly. 
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=.15\columnwidth]{jacow_picture1}\qquad%
+   \includegraphics*[width=.15\columnwidth]{jacow_picture2}
+   \caption{Example of figure inclusion. The caption should have a period “.” at the end.}
+   \label{fig:example}
+\end{figure}
+
+When referring to a figure from within the text, the
+convention is to use the abbreviated form (e.\,g., Fig.~\ref{fig:example})
+\emph{unless} the reference is at the start of the sentence. Reference to a
+table, however, is never abbreviated (e.\,g., Table~\ref{tab:example}).
+As a matter of style, authors are advised not to begin any sentence with an abbreviation or a number.
+
+Table captions are typically composed as a heading, with the initial letters of principal words capitalized and without a period at the end. A description of the table contents should be confined to the text of the paper and not in the table caption. 
+\begin{table}[!hbt]
+   \centering
+   \caption{Table Heading}
+   \begin{tabular}{lcc}
+       \toprule
+       \textbf{Column 1} & \textbf{Column 2} & \textbf{Column 3} \\ 
+                         & \textbf{[mm]}     & \textbf{[GeV]}	 \\
+       \midrule
+          Attribute A    & \num{100.2}       & \num{20.3}        \\
+          Attribute B    & \num{137.0}       & \num{~9.1}        \\
+       \bottomrule
+   \end{tabular}
+   \label{tab:example}
+\end{table}
+
+\subsection{Equations}
+
+Equations with numbers do not need to be referenced (the number can be suppressed using \verb|\nonumber|):
+\begin{equation}\label{eq:label}
+    C_B=\frac{q^3}{3\epsilon_{0}mc} = \qty{3.54}{\micro eV/T}\ .
+\end{equation}
+
+\subsection{Units}
+
+Units should be written using \verb|\qty{value}{unit}| or \verb|\num{value}| of the “siunitx” package as shown in Eq.~\eqref{eq:label}. Some examples are: \qty{3}{keV}, \qty{100}{kW}, \qty{7}{\um}.
+
+\subsection{References}
+
+In the interest of promoting complete and uniform citations, 
+the IEEE Editorial Style for Transactions and Journals has been adopted. 
+References~\cite{ref:jacow-paper, ref:journal-paper} exemplify this style. 
+When citing a periodical, use the ISO~4 standard for abbreviating journal names. 
+Please refer to Annex~C of the “Style Guide for JACoW Conference Papers” for examples. 
+Authors are responsible for paying attention to the details of the style to ensure their references are 
+accurate, and properly formatted. 
+Each paper published in recent JACoW proceedings has been assigned a digital object identifier (DOI). Including a DOI in a reference facilitates importing references into bibliographic databases and is strongly recommended. 
+Furthermore, hyperlinks to DOIs are required, while links to non-DOI URLs are prohibited. 
+JACoW conferences that stipulate a page limit typically exempt the reference section from this requirement.

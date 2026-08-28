@@ -1,0 +1,33 @@
+%% biblatex-jacow --- A biblatex implementation of the
+%% «
+%%   JACoW bibliography style
+%% »
+
+\ProvidesExplFile %«
+  {jacow.cbx}
+  {2024/03/21}
+  {0.01}
+  {JACoW biblatex citation style} %»
+
+\RequireCitationStyle{numeric-comp}
+
+%% if already set in the biblatex options, the following does not work
+%\ExecuteBibliographyOptions{giveninits=false}
+
+%% stolen from cite.sty, to mimic the behaviour of cite package
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mathchardef\citeprepenalty=\@highpenalty
+\mathchardef\citepunctpenalty=\@m
+\edef\@zero@skip{\the\z@skip}
+\def\cite@adjust{\begingroup%
+  \@tempskipa\lastskip \edef\@tempa{\the\@tempskipa}\unskip
+  \ifnum\lastpenalty=\z@ \penalty\citeprepenalty \fi
+  \ifx\@tempa\@zero@skip
+    \space
+  \else
+    \hskip\@tempskipa
+  \fi
+  \endgroup}
+\AddToHook{cmd/cite/before}{\leavevmode \cite@adjust}
+\renewcommand*{\multicitedelim}{,\penalty\citepunctpenalty\hskip.13emplus.1emminus.1em\relax}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

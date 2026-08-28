@@ -1,0 +1,1040 @@
+%% This file has been developed as a common template for papers
+%% destined for electronic production for Accelerator Conferences
+%% 
+%% See the JACoW website for more information
+%% 
+%%       http://jacow.org/
+%% 
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either
+%% version 1.3c of this license or (at your option) any later
+%% version. This version of this license is in
+%%    http://www.latex-project.org/lppl/lppl-1-3c.txt
+%% and the latest version of this license is in
+%%    http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of
+%% LaTeX version 2005/12/01 or later.
+%% 
+%% This work has the LPPL maintenance status "maintained".
+%% 
+%% Current Maintainers of this work ares Volker RW Schaa and Zhichu Chen.
+%% 
+%% This work consists of the following files
+%%   jacow.cls: JACoW class file
+%%   jacow.def: JACoW LaTeX macro definitions file
+%%   jacow.bbx: JACoW’s biblatex bibliography style
+%%   jacow.cbx: JACoW’s biblatex cite style
+%% 
+%% 
+%% Template                         a short example listing the key features of the JACoW class
+%%   
+%% 
+%% 
+%% JACoW LaTeX Style Guide      detailed guide with recommendations for good scientific writing, how to typeset unit, isotopes and elements, and much more…
+%%   
+%% 
+%  ┌────────┐
+%  │ 3.01.0 │
+%  └────────┘
+%  - initial standalone BibLaTeX package separated from the class file
+%  - version numbering: `major.minor.fix' where
+%    - `major.minor' follows the upstream `jacow.cls'
+%    - `fix' starts from 0 and gets reset to 1 by the update of `jacow.cls'
+%                                                              Zhichu Chen, 04 May 2026
+%  ====================================================================================
+%  ┌────────┐
+%  │ 3.01.1 │
+%  └────────┘
+%  - `@software' title goes back from `SᴍᴀʟʟCᴀᴘs' to `Upright Roman'
+%  - add a new entry driver: `@preprint' whose mandatory fields are:
+%    - author, title, eprinttype, eprint
+%    and optional fields:
+%    - eprintclass, doi, url, date, pubstate
+%                                                              Zhichu Chen, 30 Jun 2026
+
+%% biblatex-jacow --- A biblatex implementation of the
+%% «
+%%   JACoW bibliography style
+%% »
+
+\ProvidesExplFile %«
+  {jacow.bbx}
+  {2026-06-30}
+  {3.01.1}
+  {JACoW biblatex bibliography style} %»
+
+\RequireBibliographyStyle{numeric-comp}
+
+
+
+\regex_new:N \l_http_doi_org_regex
+\regex_new:N \l_doi:_regex
+\regex_new:N \l_doi:jacow_regex
+\regex_set:Nn \l_http_doi_org_regex { \A .*doi.org/(10\.) }
+\regex_set:Nn \l_doi:_regex { .*doi:\s*(10\.) }
+\regex_set:Nn \l_doi:jacow_regex { (10.18429/)((?i)jacow)(.*) }
+\renewcommand*\bibnamedash{\textemdash\textemdash}
+\renewcommand*\intitlepunct{\addspace}
+\renewcommand*\newunitpunct{\addcomma\addspace}
+\renewcommand*\bibfont{\normalfont\small}
+\setlength{\biblabelsep}{\labelsep}
+%\setlength{\bibitemsep}{9pt plus 6pt minus 6pt}
+\tl_new:N  \l_given_name_tl
+\regex_const:Nn \l_get_prefix_regex { \b [[:lower:]]{2} \b - }
+\regex_const:Nn \l_word_with_init_regex { (\A|\c{bibinithyphendelim}|\c{bibinitdelim}) (\cL.) (\cL.)* \.? }
+\regex_const:Nn \l_bibnamedelim:_regex { \c{bibnamedelim[[:alpha:]]+} }
+\tl_new:N \l_jacow_bib_unpublished_type
+\clist_const:Nn \l_jacow_unpublished_types {atevent,atconf,thisevent,thisconf,submitted,accepted,private}
+\tl_new:N \l_jacow_bib_event_title
+\tl_new:N \l_jacow_bib_event_id_tl
+\tl_new:N \l_jacow_bib_current_id_tl
+\str_new:N \l_jacow_bib_event_id_str
+\str_new:N \l_jacow_bib_current_id_str
+
+\ifx\j@cowevent\relax
+  \str_set:NN
+\else
+\fi
+\color_set:nnn
+      { doi }
+      {
+        HTML /
+        RGB /
+        cmyk
+      }
+      {
+        357EC7 /
+        53 , 126 , 199 /
+        0.73 , 0.37 , 0 , 0.22
+      }
+
+\DefineBibliographyExtras{american}{
+  \stdpunctuation
+}
+\newrobustcmd*{\mkdaterangejacow}[1] %«
+  {
+    \iffieldundef{#1year}
+      %%%% year not defined
+      {
+        \iffieldundef{#1endyear}
+          %%% endyear not defined
+          {}
+          %%% endyear defined, let's pretend year==endyear
+          {
+            \iffieldundef{#1month}
+              %% month not defined
+              {
+                \iffieldundef{#1endmonth}
+                  % endmonth not defined
+                  {\printfield{#1endyear}}
+                  % endmonth defined, let's pretend month==endmonth
+                  {\mkbibmonth{\thefield{#1endmonth}}\space\printfield{#1endyear}} %»
+              }
+              %% month defined
+              {
+                \iffieldundef{#1endmonth}
+                  % endmonth not defined, let's pretend month==endmonth
+                  {\mkbibmonth{\thefield{#1month}}\space\printfield{#1endyear}}
+                  % endmonth defined
+                  {
+                    \iffieldsequal{#1month}{#1endmonth}
+                      {\mkbibmonth{\thefield{#1month}}\space\printfield{#1endyear}}
+                      {\mkbibmonth{\thefield{#1month}}--\mkbibmonth{\thefield{#1endmonth}}\space\printfield{#1endyear}} %»
+                  } %»
+              } %»
+          } %»
+      }
+      %%%% year defined
+      {
+        \iffieldundef{#1endyear}
+          %%% endyear not defined, let's pretend year==endyear
+          {
+            \iffieldundef{#1month}
+              %% month not defined
+              {
+                \iffieldundef{#1endmonth}
+                  % endmonth not defined
+                  {\printfield{#1year}}
+                  % endmonth defined, let's pretend month==endmonth
+                  {\mkbibmonth{\thefield{#1endmonth}}\space\printfield{#1year}} %»
+              }
+              %% month defined
+              {
+                \iffieldundef{#1endmonth}
+                  % endmonth not defined, let's pretend month==endmonth
+                  {\mkbibmonth{\thefield{#1month}}\space\printfield{#1year}}
+                  % endmonth defined
+                  {
+                    \iffieldsequal{#1month}{#1endmonth}
+                      {\mkbibmonth{\thefield{#1month}}\space\printfield{#1year}}
+                      {\mkbibmonth{\thefield{#1month}}--\mkbibmonth{\thefield{#1endmonth}}\space\printfield{#1year}} %»
+                  } %»
+              } %»
+          }
+          %%% endyear defined
+          {
+            \iffieldsequal{#1year}{#1endyear}
+              {
+                \iffieldundef{#1month}
+                  %% month not defined
+                  {
+                    \iffieldundef{#1endmonth}
+                      % endmonth not defined
+                      {\printfield{#1year}}
+                      % endmonth defined, let's pretend month==endmonth
+                      {\mkbibmonth{\thefield{#1endmonth}}\space\printfield{#1year}} %»
+                  }
+                  %% month defined
+                  {
+                    \iffieldundef{#1endmonth}
+                      % endmonth not defined, let's pretend month==endmonth
+                      {\mkbibmonth{\thefield{#1month}}\space\printfield{#1year}}
+                      % endmonth defined
+                      {
+                        \iffieldsequal{#1month}{#1endmonth}
+                          {\mkbibmonth{\thefield{#1month}}\space\printfield{#1year}}
+                          {\mkbibmonth{\thefield{#1month}}--\mkbibmonth{\thefield{#1endmonth}}\space\printfield{#1year}} %»
+                      } %»
+                  } %»
+              }
+              {
+                \iffieldundef{#1month}
+                  %% month not defined
+                  {
+                    \printfield{#1year}--\printfield{#1endyear}
+                  }
+                  %% month defined
+                  {
+                    \iffieldundef{#1endmonth}
+                      % endmonth not defined
+                      {
+                        \printfield{#1year}--\printfield{#1endyear}
+                      }
+                      % endmonth defined
+                      {
+                        \mkbibmonth{\thefield{#1month}}\space\printfield{#1year}--\mkbibmonth{\thefield{#1endmonth}}\space\printfield{#1endyear}
+                      } %»
+                  } %»
+              } %»
+          } %»
+      } %»
+  }
+\protected\csedef{blx@imc@printdate}     {\noexpand\csuse{mkdaterangejacow}{}}
+\protected\csedef{blx@imc@printeventdate}{\noexpand\csuse{mkdaterangejacow}{event}}
+\cs_new:Npn \put_doi:n #1
+{
+  \ifvmode
+    \leavevmode
+  \fi
+  \unskip
+  \ifhmode
+    \predisplaypenalty     10000\relax
+    \postdisplaypenalty    10000\relax
+    \abovedisplayskip      -\baselineskip
+    \belowdisplayskip      -\baselineskip
+    \abovedisplayshortskip \abovedisplayskip
+    \belowdisplayshortskip \belowdisplayskip
+    $$
+    \global \dimen0=\dimexpr \predisplaysize -2em \relax
+    $$
+    \count0 \prevgraf
+    \advance  \count0 by -3
+    \advance  \count0 by -1
+    \prevgraf \count0
+  \fi
+  \noindent \kern \dimexpr \dimen0 - \@totalleftmargin \relax
+  \setbox0=\hbox{\space#1}%
+  \ifdim \dimexpr \hsize-\dimen0 \relax < \wd0
+    {\widowpenalty0 \clubpenalty0 \newline}
+  \else
+    \space
+  \fi
+  {#1}
+}
+\tl_new:N \l_doi_tl
+\str_new:N \l_doi:_str
+\str_new:N \l_doi_str
+\str_new:N \l_prefix_str
+\str_new:N \l_vol_str
+\str_gset:Nn \l_doi:_str { doi: }
+\DeclareDocumentCommand{\doi}{sd<>om}
+{
+  \str_set:Nn \l_doi_str { #4 }
+  \IfBooleanTF {#1}
+  {
+    \IfValueTF{#2}
+    {
+      \str_case_e:nn { \str_foldcase:n { #2 } }
+      {
+        { jacow } { \str_set:Nn \l_doi_str {doi<jacow>[event&year]{paper}} }
+        { arxiv } { \str_set:Nn \l_doi_str {doi<arxiv>[2-digit-year&month]{paper}} }
+        { prl }   { \str_set:Nn \l_doi_str {doi<prl>[vol]{page} ~ where ~ the ~ first ~ two ~ digits ~ of ~ “page” ~ is ~ issue ~ number} }
+        { prab }  { \str_set:Nn \l_doi_str {doi<prab>[vol]{page} ~ where ~ the ~ first ~ two ~ digits ~ of ~ “page” ~ is ~ issue ~ number} }
+        { nima }  { \str_set:Nn \l_doi_str {doi<nima>[year]{page}} }
+        { ieee/access }  { \str_set:Nn \l_doi_str {doi<ieee/access>[year]{magicnumber}} }
+        { mpid/sensors } { \str_set:Nn \l_doi_str {doi<mpid/sensors>[vol&no]{page}} }
+      }
+      \str_concat:NNN \l_doi_str \c_backslash_str \l_doi_str
+    }
+    {
+      \str_concat:NNN \l_doi_str \l_doi:_str \l_doi_str
+    }
+  }
+  {
+    \regex_replace_once:NnN \l_http_doi_org_regex { \1 } \l_doi_str
+    \regex_replace_once:NnN \l_doi:_regex         { \1 } \l_doi_str
+    \IfValueT{#2}
+    {
+      \str_case_e:nn { \str_foldcase:n { #2 } }
+      {
+        { jacow }        { \str_set:Nn \l_prefix_str {10.18429/JACoW-}            \str_set:Nn \l_vol_str {#3-} }
+        { arxiv }        { \str_set:Nn \l_prefix_str {10.48550/arXiv.}            \str_set:Nn \l_vol_str {#3.} }
+        { prl }          { \str_set:Nn \l_prefix_str {10.1103/PhysRevLett.}       \str_set:Nn \l_vol_str {#3.} }
+        { prab }         { \str_set:Nn \l_prefix_str {10.1103/PhysRevAccelBeams.} \str_set:Nn \l_vol_str {#3.} }
+        { nima }         { \str_set:Nn \l_prefix_str {10.1016/j.nima.}            \str_set:Nn \l_vol_str {#3.} }
+        { ieee/access }  { \str_set:Nn \l_prefix_str {10.1109/ACCESS.}            \str_set:Nn \l_vol_str {#3.} }
+        { mpid/sensors } { \str_set:Nn \l_prefix_str {10.3390/s}                  \str_set:Nn \l_vol_str {#3}  }
+      }
+      \IfValueT{#3}
+      {
+        \str_concat:NNN \l_prefix_str \l_prefix_str \l_vol_str
+      }
+      \str_concat:NNN \l_doi_str \l_prefix_str \l_doi_str
+    }
+    \regex_replace_once:NnN \l_doi:jacow_regex         { \1 JACoW \c{str_uppercase:n} \cB\{ \3 \cE\}  } \l_doi_str
+    \str_concat:NNN \l_doi_str \l_doi:_str \l_doi_str
+  }
+  \put_doi:n { \tt \l_doi_str }
+}
+\NewDocumentCommand\printfirst{omo} %«
+  {
+    \clist_map_inline:nn {#2} %«
+      {
+        \iffieldundef{##1}
+          {}
+          {
+            \IfValueT{#1}{\printtext{#1}}
+            \printfield{##1}
+            \IfValueT{#3}{\printtext{#3}}
+            \clist_map_break:
+          } %»
+      } %»
+  } %»
+\NewDocumentCommand\printfirstlist{omo} %«
+  {
+    \clist_map_inline:nn {#2} %«
+      {
+        \iffieldundef{##1}
+          {}
+          {
+            \IfValueT{#1}{\printtext{#1}}
+            \printlist{##1}
+            \IfValueT{#3}{\printtext{#3}}
+            \clist_map_break:
+          } %»
+      } %»
+  } %»
+\DeclareDocumentCommand{\mkbibnamegiveni}{ m }
+{
+  %% expand and set \namepartgiven to a token-list
+  \tl_set:Ne \l_given_name_tl {#1}
+  %% put a space after all periods, to treat =Z.C. Chen= the same as =Z. C. Chen=, not working as expected
+  %\regex_replace_all:nnN { \.+ } { \cL.\c{space} } \l_given_name_tl
+  %% change \bibnamedelim(a|b|i|...) to \bibinitperiod\bibinitdelim
+  \regex_replace_all:NnN \l_bibnamedelim:_regex { \c{bibinitperiod} \c{bibinitdelim} } \l_given_name_tl
+  %% change dash to \bibinithyphendelim
+  \regex_replace_all:nnN { \.?-+ } { \c{bibinithyphendelim} } \l_given_name_tl
+  %% remove prefix like al-
+  \regex_replace_all:NnN \l_get_prefix_regex {} \l_given_name_tl
+  %% get initials of each word
+  \regex_replace_all:NnN \l_word_with_init_regex { \1 \2 } \l_given_name_tl
+  %% append \bibinitperiod
+  \tl_put_right:Nn \l_given_name_tl { \bibinitperiod }
+  \tl_use:N \l_given_name_tl
+}
+\DeclareNameFormat{given-family}{%
+  \ifgiveninits
+    {\usebibmacro{name:giveni-family}
+      {\namepartfamily}
+      {\namepartgiven}
+      {\namepartprefix}
+      {\namepartsuffix}}
+    {\usebibmacro{name:given-family}
+      {\namepartfamily}
+      {\namepartgiven}
+      {\namepartprefix}
+      {\namepartsuffix}}%»
+  \usebibmacro{name:andothers}
+}
+
+\clist_map_inline:Nn %«
+  \l_jacow_unpublished_types
+  {
+    \NewBibliographyString{#1}
+  } %»
+
+\DefineBibliographyStrings{english} %«
+  {
+    june         = {Jun\adddot},
+    july         = {Jul\adddot},
+    september    = {Sep\adddot},
+    atevent     = unpublished,
+    atconf      = unpublished,
+    submitted   = submitted\addspace for\addspace publication,
+    accepted    = to\addspace be\addspace published,
+    thisevent   = this\addspace conference,
+    thisconf    = this\addspace conference,
+    private     = private\addspace communication,
+    editor  = Ed\adddot,
+    editors = Eds\adddot,
+    techreport = Rep\adddot,
+    phdthesis = Ph\adddot D\adddot\addspace thesis,
+    andothers = \mkbibemph{et\addabbrvspace al\adddot},
+  } %»
+
+
+
+
+
+\DeclareBibliographyDriver{inproceedings} %«
+  {
+    \usebibmacro{bibindex}
+    \usebibmacro{begentry} %«
+      \usebibmacro{author}
+      \setunit{\labelnamepunct}\newblock
+      \usebibmacro{title}
+      \newunit
+      \printfirst{maintitle,booktitle}
+      \newunit\newblock
+      \printfield{volume}
+      \newunit\newblock
+      \printfield{venue}
+      \newunit
+      \usebibmacro{eventdate}
+      \newunit\newblock
+      \iffieldundef{doi}
+        {\printfirst{eid,paper}}
+        {} %»
+      \newunit
+      \printfield{pages}
+      \newunit
+      \usebibmacro{date}
+      \setunit{\addperiod\addspace}\newblock
+      %\usebibmacro{eprint}
+      \printfirst{doi,url} %»
+    \usebibmacro{finentry}
+  } %»
+\DeclareBibliographyDriver{event} %«
+  {
+    \usebibmacro{bibindex}
+    \usebibmacro{begentry} %«
+      \printfield{eventtitle}
+      \newunit
+      \printfield{venue}
+      \newunit
+      \usebibmacro{eventdate/date/mon.year}
+      \setunit{\addperiod\addspace}\newblock
+      \printfirst{doi,url} %»
+    \usebibmacro{finentry}
+  } %»
+
+\DeclareBibliographyDriver{unpublished} %«
+  {
+    \usebibmacro{bibindex}
+    \usebibmacro{begentry} %«
+      \usebibmacro{author}
+      \setunit{\labelnamepunct}\newblock
+      \usebibmacro{title}
+      \newunit\newblock
+      \usebibmacro{event/journal}
+      \newunit\newblock
+      \printfirst{eid,paper}
+      \newunit\newblock
+      \usebibmacro{pubstate}
+      \newunit\newblock
+      \usebibmacro{private+date}
+      \setunit{\addperiod\addspace}\newblock
+      \tl_gset:Ne \l_jacow_bib_unpublished_type {\thefield{type}}
+      \regex_match:nVF { this \s+ conference } \l_jacow_bib_unpublished_type %«
+        {
+          \printfirst{doi,url}
+        } %»»
+    \usebibmacro{finentry}
+  }  %»
+
+
+\DeclareBibliographyDriver{article} %«
+  {
+    \usebibmacro{bibindex}
+    \usebibmacro{begentry} %«
+      \usebibmacro{author}
+      \newunit\newblock
+      \usebibmacro{title}
+      \newunit\newblock
+      \usebibmacro{short-journal}
+      \newunit\newblock
+      \printfield{volume}
+      \newunit
+      \printfirst{issue,number}
+      \newunit
+      \printfield{pages}
+      \newunit\newblock
+      \printdate
+      \setunit{\addperiod\addspace}\newblock
+      \printfirst{doi,url} %»
+    \usebibmacro{finentry}
+  } %»
+
+
+\DeclareBibliographyDriver{inbook} %«
+  {
+    \usebibmacro{bibindex}
+    \usebibmacro{begentry} %«
+      \usebibmacro{author}
+      \newunit\newblock
+      \usebibmacro{title}
+      \newunit
+      \printfirst{maintitle,booktitle}
+      \newunit\newblock
+      \usebibmacro{editor}
+      \setunit{\addperiod\addspace}\newblock
+      \usebibmacro{publisher+location+date}
+      \newunit\newblock
+      \printfield{pages}
+      \setunit{\addperiod\addspace}\newblock
+      \printfirst{doi,url} %»
+    \usebibmacro{finentry}
+  } %»
+
+
+\DeclareBibliographyDriver{book} %«
+  {
+    \usebibmacro{bibindex}
+    \usebibmacro{begentry} %«
+      \usebibmacro{author}
+      \newunit\newblock
+      \usebibmacro{title}
+      \newunit\newblock
+      \usebibmacro{editor}
+      \setunit{\addperiod\addspace}\newblock
+      \usebibmacro{publisher+location+date}
+      \setunit{\addperiod\addspace}\newblock
+      \printfirst{doi,url} %»
+    \usebibmacro{finentry}
+  } %»
+
+
+\DeclareBibliographyDriver{report} %«
+  {
+    \usebibmacro{bibindex}
+    \usebibmacro{begentry} %«
+      \usebibmacro{author}
+      \newunit\newblock
+      \usebibmacro{title}
+      \newunit\newblock
+      \printlist{institution}
+      \newunit
+      \printlist{location}
+      \newunit\newblock
+      \printfield{type}
+      \printfield{number}
+      \newunit\newblock
+      \printdate
+      \setunit{\addperiod\addspace}\newblock
+      \printfirst{doi,url} %»
+    \usebibmacro{finentry}
+  } %»
+
+
+\DeclareBibliographyDriver{online} %«
+  {
+    \usebibmacro{bibindex}
+    \usebibmacro{begentry} %«
+      \usebibmacro{author}
+      \newunit\newblock
+      \usebibmacro{title}
+      \newunit\newblock
+      \printdate
+      \newunit\newblock
+      \printfirst{doi,url} %»
+    \usebibmacro{finentry}
+  } %»
+
+\DeclareDatamodelFields[type=field,datatype=literal]{eprintserver}
+
+\DeclareBibliographyDriver{preprint} %«
+  {
+    \usebibmacro{bibindex}
+    \usebibmacro{begentry} %«
+      \usebibmacro{author}
+      \newunit\newblock
+      \usebibmacro{title}
+      \newunit\newblock
+      \usebibmacro{eprintserver}
+      \newunit\newblock
+      \usebibmacro{eprinttype+eprint+eprintclass}
+      \newunit\newblock
+      \printdate
+      \newunit\newblock
+      \printfirst{doi,url} %»
+    \usebibmacro{finentry}
+  } %»
+
+
+\DeclareBibliographyDriver{software} %«
+  {
+    \usebibmacro{bibindex}
+    \usebibmacro{begentry} %«
+      \usebibmacro{author}
+      \newunit\newblock
+      \usebibmacro{title}
+      \newunit\newblock
+      \printlist{organization}
+      \newunit\newblock
+      \printdate
+      \setunit{\addperiod\addspace}\newblock
+      \printfirst{doi,url} %»
+    \usebibmacro{finentry}
+  } %»
+
+
+\DeclareBibliographyDriver{thesis} %«
+  {
+    \usebibmacro{bibindex}
+    \usebibmacro{begentry} %«
+      \usebibmacro{author}
+      \newunit\newblock
+      \usebibmacro{title}
+      \newunit
+      \printfield{type}
+      \newunit\newblock
+      \printlist{institution}
+      \newunit
+      \printlist{location}
+      \newunit\newblock
+      \printfield{number}
+      \newunit\newblock
+      \printdate
+      \setunit{\addperiod\addspace}\newblock
+      \printfirst{doi,url} %»
+    \usebibmacro{finentry}
+  } %»
+
+\DeclareBibliographyDriver
+    {manual} %«
+    {
+      \usebibmacro{bibindex}
+      \usebibmacro{begentry} %«
+      \usebibmacro{title}
+      \newunit\newblock
+      \printlist{organization}
+      \newunit
+      \printlist{location}
+      \newunit\newblock
+      \printdate
+      \newunit\newblock
+      \printfield{pages}
+      \setunit{\addperiod\addspace}\newblock
+      \printfirst{doi,url} %»
+      \usebibmacro{finentry}
+    } %»
+
+\DeclareBibliographyDriver{patent} %«
+  {
+    \usebibmacro{bibindex}
+    \usebibmacro{begentry} %«
+      \usebibmacro{author}
+      \newunit\newblock
+      \usebibmacro{title}
+      \newunit\newblock
+      \printlist{institution}
+      \newunit\newblock
+      \printlist{location}
+      \newunit\newblock
+      \printfield{number}
+      \newunit\newblock
+      \printdate
+      \setunit{\addperiod\addspace}\newblock
+      \printfirst{doi,url} %»
+    \usebibmacro{finentry}
+  } %»
+
+
+\DeclareBibliographyDriver{standard} %«
+  {
+    \usebibmacro{bibindex}
+    \usebibmacro{begentry} %«
+      \usebibmacro{author}
+      \newunit\newblock
+      \usebibmacro{title}
+      \newunit\newblock
+      \printlist{location}
+      \newunit\newblock
+      \printfield{number}
+      \newunit\newblock
+      \printdate
+      \setunit{\addperiod\addspace}\newblock
+      \printfirst{doi,url} %»
+    \usebibmacro{finentry}
+  } %»
+
+
+\DeclareDriverSourcemap[datatype=bibtex]{
+  \map{
+    \step[fieldset=day, null]
+  }
+  \map{
+    \step[typesource=conference, typetarget=event]
+    \step[typesource=electronic, typetarget=online]
+    \step[typesource=www,        typetarget=online]
+  }
+  \map{
+    \step[typesource=mastersthesis, typetarget=thesis, final]
+    \step[fieldset=type,            fieldvalue=mathesis]
+  }
+  \map{
+    \step[typesource=phdthesis, typetarget=thesis, final]
+    \step[fieldset=type,        fieldvalue=phdthesis]
+  }
+  \map{
+    \step[typesource=techreport, typetarget=report, final]
+    \step[fieldset=type,         fieldvalue=techreport]
+  }
+  \map{
+    \step[fieldsource=hyphenation,   fieldtarget=langid]
+    \step[fieldsource=address,       fieldtarget=location]
+    \step[fieldsource=school,        fieldtarget=institution]
+    \step[fieldsource=annote,        fieldtarget=annotation]
+    \step[fieldsource=archiveprefix, fieldtarget=eprinttype]
+    \step[fieldsource=journal,       fieldtarget=journaltitle]
+    \step[fieldsource=primaryclass,  fieldtarget=eprintclass]
+    \step[fieldsource=key,           fieldtarget=sortkey]
+    \step[fieldsource=pdf,           fieldtarget=file]
+  }
+}
+
+
+\DeclareSourcemap %«
+  {
+    \maps[datatype=bibtex] %«
+      {
+        \map {
+          \pertype{inproceedings}
+          \pertype{unpublished}
+          \step[fieldsource=paper, fieldtarget=eid]
+        }
+        \map %«
+          {
+            \step[typesource=atevent,   typetarget=unpublished,final]
+            \step[fieldset=type,        fieldvalue=atevent]
+          } %»
+        \map %«
+          {
+            \step[typesource=atconf,    typetarget=unpublished,final]
+            \step[fieldset=type,        fieldvalue=atevent]
+          } %»
+        \map %«
+          {
+            \step[typesource=thisevent, typetarget=unpublished,final]
+            \step[fieldset=type,        fieldvalue=thisevent]
+          } %»
+        \map %«
+          {
+            \step[typesource=thisconf,  typetarget=unpublished,final]
+            \step[fieldset=type,        fieldvalue=thisevent]
+          } %»
+        \map %«
+          {
+            \step[typesource=submitted, typetarget=unpublished,final]
+            \step[fieldset=type,        fieldvalue=submitted]
+          } %»
+        \map %«
+          {
+            \step[typesource=accepted, typetarget=unpublished,final]
+            \step[fieldset=type,          fieldvalue=accepted]
+          } %»
+        \map %«
+          {
+            \step[typesource=private,     typetarget=unpublished,final]
+            \step[fieldset=type,          fieldvalue=private]
+          } %»
+        \map {
+          \pertype{preprint}
+          \step[fieldsource=archiveprefix]
+          \step[fieldset=eprinttype, origfieldval]
+          \step[fieldsource=eprinttype]
+          \step[fieldset=eprintserver, origfieldval]
+        }
+        \map {
+          \pertype{preprint}
+          \step[fieldsource=url, final]
+          \step[fieldset=doi, origfieldval]
+          \step[fieldsource=doi, match=\regexp{.*arxiv\.org.*/([0-9.]+).*}, replace=\regexp{10.48550/arXiv.$1}]
+        }
+        \map %«
+          {
+            \step[fieldsource=title,match=\regexp{“(.*?)”},replace=\regexp{\\mkbibquote\{$1\}}]
+          } %»
+      } %»
+  } %»
+
+\DeclareFieldFormat[inproceedings]{booktitle} %«
+  {
+    \bibstring{in}\addspace
+    \hasfieldannotation[][short] %«
+      {
+        \mkbibemph{\getfieldannotation[][short]\isdot}
+      }
+      {
+        \mkbibemph{#1\isdot}
+      } %»
+  }
+\DeclareFieldFormat[event]{eventtitle}{#1\isdot}
+\DeclareFieldFormat[unpublished,article,periodical]{journaltitle}{\mkbibemph{#1\isdot}}
+\DeclareFieldFormat[unpublished,article,periodical]{shortjournal}{\mkbibemph{#1\isdot}}
+\DeclareFieldFormat[unpublished]{eventtitle} %«
+  {
+    \tl_gclear:N \l_jacow_bib_event_title
+    \hasfieldannotation[][short] %«
+      {
+        \tl_gset:Ne \l_jacow_bib_event_title { \getfieldannotation[][short] }
+      }
+      {
+        \tl_gset:Nn \l_jacow_bib_event_title { #1 }
+      } %»
+    \regex_replace_once:nnN {\A \s*((?i)the)?\s* (.*) \Z} { \2 } \l_jacow_bib_event_title
+    \regex_match:nVTF {\A [A-Za-z]+[\s*|'|’]*\d+ \Z} \l_jacow_bib_event_title %«
+      {
+        \tl_gput_right:Nn \l_jacow_bib_event_title { \isdot }
+      }
+      {
+        \tl_gput_left:Nn  \l_jacow_bib_event_title { the ~ }
+        \tl_gput_right:Nn \l_jacow_bib_event_title { \isdot }
+      } %»
+    \l_jacow_bib_event_title
+  }
+\DeclareFieldFormat[article,periodical]{volume}{\bibstring{volume}\nobreakspace#1}
+\DeclareFieldFormat[article,periodical]{issue}{\bibstring{number}\nobreakspace#1}
+\DeclareFieldFormat[article,periodical]{number}{\bibstring{number}\nobreakspace#1}
+\DeclareFieldFormat[report]{number}{\addspace#1}
+\DeclareFieldFormat{eprintserver}{\mkbibemph{#1}}
+\DeclareFieldFormat{eprintclass}{\mkbibbrackets{#1}}
+\DeclareFieldFormat{eprinttype}{#1}
+\DeclareFieldFormat{eprint}{#1}
+\DeclareFieldFormat[patent]{number}{No.\nobreakspace#1}
+\DeclareFieldFormat[standard]{number}{Standard\nobreakspace#1}
+\DeclareFieldFormat{title}{\mkbibquote{#1\isdot}}
+\DeclareFieldFormat{titlecase}{\MakeSentenceCase*{#1}}
+\DeclareFieldFormat[book,manual]{title}{\mkbibemph{#1\isdot}}
+\DeclareFieldFormat[book,manual]{titlecase}{{#1}}
+\DeclareFieldFormat[online,software,misc]{title}{#1}
+\DeclareFieldFormat{maintitle}{\bibstring{in}\addspace\mkbibemph{#1\isdot}}
+\DeclareFieldFormat{booktitle}{\bibstring{in}\addspace\mkbibemph{#1\isdot}}
+\DeclareFieldFormat{eid}{paper\addspace#1}
+\DeclareFieldFormat{doi}{%
+  \color_group_begin:
+  \put_doi:n {
+    \href{https\c_colon_str//doi.org/#1}{\color_select:n { doi } {\nolinkurl{doi:#1}} }
+  }
+  \color_group_end:
+}
+\DeclareFieldFormat{url}{\url{#1}}
+
+\newbibmacro*{name:giveni-family}[4]{% #1:family #2:given #3:prefix #4:suffix
+  \usebibmacro{name:delim}{#2#3#1}%
+  \usebibmacro{name:hook}{#2#3#1}%
+  \mkbibcompletenamegivenfamily{%
+    \ifdefvoid{#2}
+      {}
+      {\mkbibnamegiveni{#2}\isdot\bibnamedelimd}%»
+    \ifdefvoid{#3}
+      {}
+      {\mkbibnameprefix{#3}\isdot
+        \ifprefchar
+          {}
+          {\ifuseprefix{\bibnamedelimc}{\bibnamedelimd}}}%»»»
+    \mkbibnamefamily{#1}\isdot
+    \ifdefvoid{#4}{}{\bibnamedelimd\mkbibnamesuffix{#4}\isdot}}%»
+}
+\renewbibmacro*{title}{%
+  \ifboolexpr{
+      test {\iffieldundef{title}} %»
+      and
+      test {\iffieldundef{subtitle}} %» %»
+  }
+  {}
+  {\printtext[title]{%
+      \printfield[titlecase]{title}%
+      \setunit{\subtitlepunct}%
+      \printfield[titlecase]{subtitle}}%
+    \newunit}%
+  \printfield{titleaddon}}
+\newbibmacro*{eventdate/date/mon.year} %«
+  {
+    \iffieldundef{eventyear}
+      {
+        \usebibmacro{date}%
+      }
+      {
+        \usebibmacro{eventdate}
+      }%»
+  } %»
+\newbibmacro*{eventdate}{%
+  \iffieldundef
+      {eventendyear}
+      {% endyear doesn’t exist
+        \iffieldundef
+            {eventmonth}
+            {
+              \printfield{eventyear}
+            }
+            {
+              \mkbibmonth{\thefield{eventmonth}}\space
+              \printfield{eventyear}
+            }
+      }
+      {% endyear exists
+        \iffieldsequal
+            {eventyear}{eventendyear}
+            {% year = endyear
+              \iffieldsequal
+                  {eventmonth}{eventendmonth}
+                  {% month = endmonth
+                    \mkbibmonth{\thefield{eventmonth}}\space
+                    \printfield{eventyear}
+                  }
+                  {% month ≠ endmonth
+                    \mkbibmonth{\thefield{eventmonth}}--\mkbibmonth{\thefield{eventendmonth}}\space
+                    \printfield{eventyear}
+                  }
+            }
+            {% year ≠ endyear
+              \mkbibmonth{\thefield{eventmonth}}\space\printfield{eventyear}--\mkbibmonth{\thefield{eventendmonth}}\space
+              \printfield{eventendyear}
+            }
+      }
+}
+\renewbibmacro*{date}{
+  \ifboolexpr{
+      test {\iffieldundef{eventyear}} %»»
+  }
+  {\printdate}
+  {}
+}
+\newbibmacro*{event/journal} %«
+  {
+    \iffieldundef{eventtitle}
+      {
+        \usebibmacro{short-journal}
+      }
+      {
+        \printtext{presented ~ at}\addspace
+        \printfield{eventtitle}
+        \newunit
+        \printfield{venue}
+        \newunit
+        \usebibmacro{eventdate/date/mon.year}
+      } %»
+  } %»
+\newbibmacro*{short-journal}%«
+  {%
+    \iffieldundef{shortjournal}
+      {%
+        \iffieldundef{journaltitle}
+          {}
+          {%
+            \printfield{journaltitle}%
+          }%»
+        \iffieldundef{journalsubtitle}
+          {}
+          {%
+            \setunit{\subtitlepunct}%
+            \printfield{journalsubtitle}%
+          }%»
+      }
+      {%
+        \printfield{shortjournal}
+      }%»
+  }
+\newbibmacro*{pubstate} %«
+  {
+    \iffieldundef{pubstate}
+      % pubstate undefined
+      {
+        \iffieldundef{type}
+          %% type undefined
+          {
+            \ifbibstring{\thefield{entrytype}}
+              %%% the entry is @atevent, @atconf, @submitted, etc
+              {\printtext{\bibstring{\thefield{entrytype}}}}
+              %%% the entry type does not have a pubstate bibstring
+              {
+                \iffieldundef{eventtitle}
+                  % not an event
+                  {
+                    \iffieldundef{journaltitle}
+                      % not accepted by a journal yet
+                      {
+                        \printtext{unpublished}
+                      }
+                      % to be published by a journal
+                      {
+                        \printtext{to ~ be ~ published}
+                      } %»
+                  }
+                  % presented at an event
+                  {
+                    \ifx\j@cowevent\undefined
+                      \printtext{unpublished}
+                    \else
+                      \iffieldundef{indextitle} % actually =title= is always copied to =indextitle= & =sorttitle= if these fields not defined
+                        { \bibstring{atevent} }
+                        {
+                          \str_if_eq:eeTF { \str_lower_case:f { \j@cowevent } } { \str_lower_case:f { \abx@field@indextitle } }
+                          { \bibstring{thisevent} }
+                          { \bibstring{atevent}   }
+                        } %»
+                    \fi
+                  } %»
+              } %»
+          }
+          %% type defined
+          {
+            \printfield{type}
+          } %»
+      }
+      % pubstate defined
+      {
+        \printfield{pubstate}
+      } %»
+  } %»
+\newbibmacro*{private+date} %«
+  {
+    \iffieldequalstr{type}{private}
+      {\printdate}
+      {} %»
+  } %»
+\newbibmacro*{eprintserver} %«
+  {
+    \printfield{eprintserver}
+  } %»
+\newbibmacro*{eprinttype+eprint+eprintclass} %«
+  {
+    \printfield{eprinttype}
+    \iffieldundef{eprint}
+      {}
+      {
+        \setunit*{\addcolon}
+        \printfield{eprint}
+        \setunit*{\space}
+        \printfield{eprintclass}
+      }
+    \setunit*{\addcomma\space}
+  } %»
+\renewbibmacro*{finentry} %«
+  {
+    \blx@begunit
+    \blx@endunit
+  }
+
+\endinput

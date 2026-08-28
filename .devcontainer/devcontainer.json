@@ -1,0 +1,6 @@
+{
+	"name": "TinyTeX",
+    "build": { "dockerfile": "Dockerfile" },
+	"runArgs": ["--network=host"],
+	"remoteUser": "root"
+}

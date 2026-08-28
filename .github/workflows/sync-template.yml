@@ -1,0 +1,138 @@
+name: Sync from JACoW Templates
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      # Your repo is checked out into the default working directory.
+      - name: Check out my repository
+        uses: actions/checkout@v5
+
+      # Upstream repo is checked out into a subfolder called upstream.
+      - name: Check out JACoW Templates
+        uses: actions/checkout@v5
+        with:
+          repository: JACoW-org/JACoW_Templates
+          path: upstream
+
+      # Copy only the files you want from upstream to your repo.
+      - name: Copy selected files
+        run: |
+          mkdir -p src
+          mkdir -p src/figures
+          cp upstream/LaTeX/jacow.cls src/jacow.cls
+          cp upstream/LaTeX/jacow.bbx src/jacow.bbx
+          cp upstream/LaTeX/jacow.cbx src/jacow.cbx
+          cp upstream/LaTeX/jacow.dbx src/jacow.dbx
+          cp upstream/LaTeX/jacow_latex_template_bib.tex src/main.tex
+          cp upstream/LaTeX/jacow_latex_template_bib.bib src/references.bib
+          cp upstream/LaTeX/jacow_picture1.png src/figures/
+          cp upstream/LaTeX/jacow_picture2.png src/figures/
+
+      # Delete the upstream directory
+      - name: Remove upstream checkout
+        run: rm -rf upstream
+
+
+      - name: Patch main.tex
+        run: |
+          # Rename the default bib file. 
+          sed -i 's/\\addbibresource{jacow_latex_template_bib.bib}/\\addbibresource{references.bib}/' src/main.tex
+          
+          # Add a graphicspath so that figures can go in a subdirectory
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('src/main.tex')
+          lines = p.read_text().splitlines()
+
+          for i, line in enumerate(lines):
+              if line.startswith('\\addbibresource'):
+                  lines.insert(i + 1, '\\graphicspath{{figures/}}')
+                  break
+
+          p.write_text('\n'.join(lines) + '\n')
+          PY
+
+          # Move content of sections into separate .tex files
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          src = Path('src/main.tex')
+          text = src.read_text()
+
+          section_re = re.compile(r'\\section(\*)?\{([^}]+)\}')
+          matches = list(section_re.finditer(text))
+
+          if not matches:
+              print('No sections found')
+              exit(0)
+
+          content_dir = Path('src/content')
+          content_dir.mkdir(exist_ok=True)
+
+          # Boundaries that end a section body and stay in main.tex
+          boundary_re = re.compile(r'\\section(\*)?\{|\\printbibliography|\\end\{document\}')
+
+          new_parts = []
+          last_end = 0
+
+          for i, m in enumerate(matches):
+              section_start = m.start()
+              section_end = m.end()
+
+              # Keep everything before this section (preamble, etc.)
+              new_parts.append(text[last_end:section_start])
+
+              # Keep the \section{...} command itself in main.tex
+              new_parts.append(text[section_start:section_end])
+
+              # Find where this section's body ends
+              next_boundary = boundary_re.search(text, section_end)
+              if next_boundary:
+                  body_end = next_boundary.start()
+              else:
+                  body_end = len(text)
+
+              section_body = text[section_end:body_end].strip('\n')
+
+              subfile = content_dir / f'subfile_{i + 1}.tex'
+              subfile.write_text(section_body + '\n')
+
+              new_parts.append(f'\n\n\\input{{content/subfile_{i + 1}.tex}}\n\n\n')
+
+              last_end = body_end
+
+          # Append everything after the last section (bibliography, \end{document}, etc.)
+          new_parts.append(text[last_end:])
+
+          src.write_text(''.join(new_parts))
+          PY
+
+      # Create a pull request if anything changed.
+      # - name: Create pull request
+      #   uses: peter-evans/create-pull-request@v7
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     branch: sync-upstream
+      #     commit-message: "Sync files from JACoW Templates"
+      #     title: "Upstream JACoW template sync"
+      #     body: "This pull request was created automatically by GitHub Actions."
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --staged --quiet || git commit -m "Sync files from JACoW Templates"
+          git push
