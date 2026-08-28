@@ -2,13 +2,16 @@
 
 A minimal, auto-updating LaTeX template for
 [JACoW conference](https://github.com/JACoW-org/JACoW_Templates/)
-submissions. Unlike the official template, this repository:
+proceedings. Unlike the official template, this repository:
 
-- Contains only the necessary LaTeX files (no Word templates or extra bundles)
+- Contains only the necessary LaTeX files (no Word templates etc)
 - Uses a practical directory structure for writing
-- Automatically syncs with the official template via GitHub Actions (daily checks)
 - Provides a builder script to generate submission-ready files without
   modifying your working source
+
+This repository automatically syncs with the official template via GitHub
+Actions (checks are done daily), so it will remain up-to-date provided
+there are no breaking changes.
 
 ## Quick Start
 
@@ -22,17 +25,17 @@ submissions. Unlike the official template, this repository:
 
 ```
 jacow-latex-template/
-├── src/
-│ ├── main.tex # Defines paper structure and sections
-│ ├── content/ # Section content (one .tex file per section)
-│ │ ├── introduction.tex
+├── src/             # All paper content goes in here
+│ ├── main.tex       # Defines paper structure and sections
+│ ├── references.bib # Bibliography
+│ ├── content/       # Section content (one .tex file per section)
+│ │ ├── introduction.tex # Some example files
 │ │ └── beam_tests.tex
-│ └── figures/ # Images
+│ └── figures/       # Images
 │   ├── image.png
-├── references.bib # Bibliography
 ├── build_submission.py # Submission builder script
-├── .devcontainer/ # Dev container configuration
-└── .github/ # GitHub Actions for auto-sync
+├── .devcontainer/      # Dev container configuration
+└── .github/            # GitHub Actions for auto-sync
 ```
 
 **`src/main.tex`** defines your paper's structure using `\input{}` commands to
