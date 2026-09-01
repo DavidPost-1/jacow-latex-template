@@ -12,6 +12,7 @@ ENV PATH="$PATH:/root/bin/"
 ENV PATH="$PATH:/root/.local/bin"
 
 # Install required tex packages
+RUN tlmgr update --self
 RUN tlmgr install sttools preprint siunitx caption footmisc newtxtt tex-gyre newtx oberdiek microtype enumitem biblatex csquotes biber
 RUN tlmgr install babel-english; exit 0
 RUN tlmgr path add 
