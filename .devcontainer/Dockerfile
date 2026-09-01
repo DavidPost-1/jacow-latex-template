@@ -21,3 +21,15 @@ RUN tlmgr path add
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="$PATH:/root/.local/bin/"
 RUN uv python install 3.14
+
+# Print simple instructions to the screen 
+RUN touch "/root/.bashrc"
+RUN echo "echo Using jacow-latex-template from https://github.com/DavidPost-1/jacow-latex-template" >> /root/.bashrc
+RUN echo "echo First run \'make\' and verify ./src/main.pdf has compiled" >> /root/.bashrc
+RUN echo "echo ''" >> /root/.bashrc
+RUN echo "echo Paper layout in ./src/main.tex."
+RUN echo "echo Use \\\\\\\\input\{content/\<filename\>.tex\} to define structure." >> /root/.bashrc
+RUN echo "echo Section content in ./src/content/\<filename\>.tex."
+RUN echo "echo At least one file per section.\n\n" >> /root/.bashrc
+RUN echo "echo ''" >> /root/.bashrc
+RUN echo "echo Generate submission source with \'make submission\', check ./build directory." >> /root/.bashrc
