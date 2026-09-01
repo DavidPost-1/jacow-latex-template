@@ -19,4 +19,5 @@ RUN tlmgr path add
 
 # Install uv
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="$PATH:/root/.local/bin/"
 RUN uv python install 3.14
